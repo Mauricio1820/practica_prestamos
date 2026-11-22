@@ -6,62 +6,62 @@ Programación de Negocios · Odoo 20
 
 ## Respuestas
 
-### Catálogo de equipos
+### Paso 1. Catálogo de equipos
 
-**¿Qué pasa al desmarcar Activo? ¿Por qué conviene archivarlo?**
+**1. ¿Qué pasa con un equipo cuando se desmarca el campo Activo? ¿Por qué es mejor que borrarlo?**
 
-Al quitar la marca, el equipo queda archivado y desaparece de la lista normal. Si después ocupo ver a quién se prestó, el registro sigue ahí.
+Si le quito la marca de Activo a una laptop, Odoo la archiva y deja de salir en la lista que veo normalmente. Me conviene archivarla porque puede que esa laptop ya se haya prestado varias veces. Así, si después ocupo revisar uno de esos préstamos, todavía puedo ver qué equipo era. También la puedo volver a activar.
 
-**¿Para qué sirve copy=False en el código?**
+**2. ¿Para qué sirve `copy=False` en el campo `codigo`?**
 
-Si duplico una laptop, Odoo deja vacío el código de inventario para que escriba el del otro equipo.
+Sirve para que el código de inventario quede vacío cuando duplico un equipo. Por ejemplo, si uso la Laptop Dell 01 como base para registrar otra igual, puedo aprovechar su nombre y categoría, pero tengo que escribir el código que le corresponde a la nueva.
 
-### Registro de préstamos
+### Paso 2. Registro de préstamos
 
-**¿Qué hacen _name y _inherit en este modelo?**
+**1. Este modelo usa `_name` y `_inherit` al mismo tiempo. ¿Qué hace cada uno aquí?**
 
-Con _name le doy al préstamo su propio modelo, prestamo.prestamo. Con _inherit uso mail.thread para que cada préstamo tenga su historial de mensajes.
+Con `_name` le pongo al modelo de préstamos el nombre `prestamo.prestamo`. Con `_inherit` aprovecho lo que ya trae `mail.thread` para manejar mensajes y guardar cambios. Así, cuando abro un préstamo, ahí mismo puedo leer lo que ha pasado con él.
 
-**¿Qué hace tracking=True en el estado?**
+**2. ¿Qué hace `tracking=True` en el campo `state`?**
 
-Cuando cambia el estado, Odoo guarda en el historial el valor anterior y el nuevo. Así puedo ver cuándo pasó de Borrador a Prestado.
+Hace que el cambio de estado quede anotado en el historial del préstamo. Por ejemplo, cuando le doy a Prestar, puedo ver que antes estaba en Borrador y que pasó a Prestado. Si después alguien lo devuelve, también queda registrado ese cambio.
 
-### Equipos del préstamo
+### Paso 3. Equipos del préstamo
 
-**¿Qué indican los dos parámetros del One2many?**
+**1. En `fields.One2many("prestamo.linea", "prestamo_id")`, ¿qué indica cada parámetro?**
 
-prestamo.linea es el modelo donde se guarda cada renglón. prestamo_id es el campo de ese renglón que apunta al préstamo. Así el formulario reúne los equipos que le corresponden.
+El primero, `prestamo.linea`, indica dónde se guarda cada línea de equipo. El segundo, `prestamo_id`, le dice a Odoo qué campo de esa línea debe revisar para saber a qué préstamo pertenece. Si agrego una laptop y un proyector al mismo préstamo, quedan dos líneas con el mismo `prestamo_id`. Por eso me salen juntas cuando abro el formulario.
 
-**¿Qué pasa con las líneas si borro el préstamo?**
+**2. ¿Qué pasa con las líneas cuando se borra un préstamo? ¿Qué parte del código lo define?**
 
-Si borro el préstamo, se borran sus líneas por ondelete="cascade" en prestamo_id. Los equipos siguen en el catálogo.
+Al borrar el préstamo también se borran las líneas que le pertenecen. Eso lo define `ondelete="cascade"` en el campo `prestamo_id`. En el ejemplo de la laptop y el proyector, se borran los dos renglones de ese préstamo y los equipos siguen en el catálogo.
 
-### Entrega y devolución
+### Paso 4. Flujo de estados
 
-**¿Por qué se valida el estado si el botón ya está oculto?**
+**1. Los botones ya se ocultan según el estado. ¿Por qué los métodos vuelven a validar el estado?**
 
-Ocultar el botón solo controla lo que veo en pantalla. Si alguien intenta prestar de nuevo el mismo registro, el método revisa su estado antes de cambiar los equipos.
+Puede pasar que dos personas tengan abierto el mismo préstamo en Borrador. Si una ya entregó el equipo, la otra todavía podría tener el botón Prestar en su pantalla. Por eso, cuando le da al botón, el método revisa cómo está el préstamo en ese momento. Si ya aparece como Prestado, Odoo detiene la segunda entrega.
 
-**¿Cómo se cambia el estado de todos los equipos sin otro ciclo?**
+**2. ¿Qué hace `prestamo.linea_ids.equipo_id.write(...)`? ¿Por qué no hace falta un `for` para cada equipo?**
 
-prestamo.linea_ids.equipo_id reúne los equipos de las líneas. Con write cambio el estado de todo ese conjunto en una sola llamada.
+`linea_ids` me da las líneas del préstamo y con `equipo_id` obtengo los equipos de esas líneas. Odoo permite usar `write` sobre todo ese grupo de una vez. Si el préstamo lleva una laptop y un proyector, con la misma llamada los dos pasan a Prestado. Al devolverlos se hace lo mismo para dejarlos disponibles.
 
-### Reglas del préstamo
+### Paso 5. Reglas del préstamo
 
-**¿Por qué revisar la disponibilidad al prestar?**
+**1. El campo `equipo_id` ya filtra los equipos disponibles. ¿Por qué hace falta el TODO 5?**
 
-Puedo elegir una laptop disponible y dejar el préstamo en borrador. Si la pasan a mantenimiento antes de que pulse Prestar, el método tiene que revisar otra vez para impedir la entrega.
+Porque el equipo puede cambiar de estado entre el momento en que lo elijo y el momento en que lo entrego. Yo puedo dejar una laptop en un borrador y que después alguien la mande a mantenimiento. Al darle a Prestar, el sistema revisa otra vez y me dice cuál equipo ya no está disponible.
 
-**¿Cuándo se ejecutan las restricciones y cuándo se valida el préstamo?**
+**2. ¿En qué momento se ejecuta un método con `@api.constrains`? ¿Y la validación de `action_prestar`?**
 
-Odoo ejecuta @api.constrains al crear o modificar un registro con los campos que se revisan. Por eso una fecha incorrecta falla al guardar. El límite de equipos y la disponibilidad se revisan cuando pulso Prestar.
+Odoo revisa `@api.constrains` cuando creo o actualizo el registro con alguno de los campos que aparecen en esa regla. Por ejemplo, si pongo la devolución antes del día del préstamo, el error me sale al guardar. En cambio, la validación de `action_prestar` se hace cuando le doy a Prestar. Ahí es donde se comprueba, entre otras cosas, si un estudiante está intentando llevar más de dos equipos.
 
-### Historial, tarjetas y búsqueda
+### Paso 6. Contacto, kanban y búsqueda
 
-**¿Qué pasa al mover una tarjeta a otra columna?**
+**1. ¿Qué pasa si arrastra una tarjeta del kanban a otra columna? ¿Por qué?**
 
-Si muevo una tarjeta de Disponible a En mantenimiento, el equipo queda en mantenimiento. Cada columna representa el campo estado y Odoo cambia ese valor al mover la tarjeta.
+Si paso una laptop de Disponible a En mantenimiento, Odoo guarda En mantenimiento como su nuevo estado. Eso pasa porque las columnas están agrupadas por el campo `estado`. El cambio también se ve al abrir la ficha de la laptop. Si ya está prestada, la regla de mantenimiento me pide devolverla primero.
 
-**¿Se crea una columna en contactos al agregar prestamo_ids?**
+**2. El campo `prestamo_ids` se agregó a `res.partner`. ¿Se crea una columna nueva en la tabla de contactos? Explique.**
 
-La relación ya está guardada en partner_id de cada préstamo. Al abrir el contacto, prestamo_ids muestra los préstamos que apuntan a él. Por eso no necesita otra columna en la tabla de contactos.
+No se crea otra columna en contactos. Cada préstamo ya guarda quién lo pidió en el campo `partner_id`. Cuando abro la pestaña Préstamos de un contacto, Odoo busca los préstamos que tienen a esa persona como solicitante y me los muestra ahí. Así puedo revisar todo lo que ha pedido desde su ficha.
