@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class PrestamoEquipo(models.Model):
@@ -29,5 +29,12 @@ class PrestamoEquipo(models.Model):
         default="disponible",
         group_expand=True,
     )
+    linea_ids = fields.One2many("prestamo.linea", "equipo_id", string="Líneas de préstamo")
+    veces_prestado = fields.Integer(string="Veces prestado", compute="_compute_veces_prestado")
     notas = fields.Text(string="Notas")
     active = fields.Boolean(string="Activo", default=True)
+
+    @api.depends("linea_ids.prestamo_id")
+    def _compute_veces_prestado(self):
+        for equipo in self:
+            equipo.veces_prestado = len(equipo.linea_ids.prestamo_id)
