@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 class PrestamoEquipo(models.Model):
@@ -38,3 +39,17 @@ class PrestamoEquipo(models.Model):
     def _compute_veces_prestado(self):
         for equipo in self:
             equipo.veces_prestado = len(equipo.linea_ids.prestamo_id)
+
+    def write(self, vals):
+        if vals.get("estado") == "mantenimiento" and any(equipo.estado == "prestado" for equipo in self):
+            raise UserError("Primero hay que devolver el equipo prestado.")
+        return super().write(vals)
+
+    def action_mantenimiento(self):
+        self.write({"estado": "mantenimiento"})
+
+    def action_disponible(self):
+        for equipo in self:
+            if equipo.estado != "mantenimiento":
+                raise UserError("El equipo debe estar en mantenimiento.")
+        self.write({"estado": "disponible"})
