@@ -45,3 +45,13 @@ Ocultar el botón solo controla lo que veo en pantalla. Si alguien intenta prest
 **¿Cómo se cambia el estado de todos los equipos sin otro ciclo?**
 
 prestamo.linea_ids.equipo_id reúne los equipos de las líneas. Con write cambio el estado de todo ese conjunto en una sola llamada.
+
+### Reglas del préstamo
+
+**¿Por qué revisar la disponibilidad al prestar?**
+
+Puedo elegir una laptop disponible y dejar el préstamo en borrador. Si la pasan a mantenimiento antes de que pulse Prestar, el método tiene que revisar otra vez para impedir la entrega.
+
+**¿Cuándo se ejecutan las restricciones y cuándo se valida el préstamo?**
+
+Odoo ejecuta @api.constrains al crear o modificar un registro con los campos que se revisan. Por eso una fecha incorrecta falla al guardar. El límite de equipos y la disponibilidad se revisan cuando pulso Prestar.
