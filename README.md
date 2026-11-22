@@ -15,3 +15,13 @@ Al quitar la marca, el equipo queda archivado y desaparece de la lista normal. S
 **¿Para qué sirve copy=False en el código?**
 
 Si duplico una laptop, Odoo deja vacío el código de inventario para que escriba el del otro equipo.
+
+### Registro de préstamos
+
+**¿Qué hacen _name y _inherit en este modelo?**
+
+Con _name le doy al préstamo su propio modelo, prestamo.prestamo. Con _inherit uso mail.thread para que cada préstamo tenga su historial de mensajes.
+
+**¿Qué hace tracking=True en el estado?**
+
+Cuando cambia el estado, Odoo guarda en el historial el valor anterior y el nuevo. Así puedo ver cuándo pasó de Borrador a Prestado.
