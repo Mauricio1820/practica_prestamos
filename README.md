@@ -25,3 +25,13 @@ Con _name le doy al préstamo su propio modelo, prestamo.prestamo. Con _inherit 
 **¿Qué hace tracking=True en el estado?**
 
 Cuando cambia el estado, Odoo guarda en el historial el valor anterior y el nuevo. Así puedo ver cuándo pasó de Borrador a Prestado.
+
+### Equipos del préstamo
+
+**¿Qué indican los dos parámetros del One2many?**
+
+prestamo.linea es el modelo donde se guarda cada renglón. prestamo_id es el campo de ese renglón que apunta al préstamo. Así el formulario reúne los equipos que le corresponden.
+
+**¿Qué pasa con las líneas si borro el préstamo?**
+
+Si borro el préstamo, se borran sus líneas por ondelete="cascade" en prestamo_id. Los equipos siguen en el catálogo.
