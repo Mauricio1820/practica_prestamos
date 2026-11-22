@@ -77,6 +77,15 @@ class PrestamoPrestamo(models.Model):
                      f"a {prestamo.partner_id.name}."
             )
 
+    def action_marcar_atrasado(self):
+        for prestamo in self:
+            if prestamo.state != "prestado":
+                raise UserError("El préstamo debe estar prestado.")
+            if prestamo.fecha_devolucion >= fields.Date.context_today(prestamo):
+                raise UserError("Todavía no ha pasado la fecha de devolución.")
+            prestamo.state = "atrasado"
+            prestamo.message_post(body="Pasó la fecha de devolución del equipo.")
+
     def action_devolver(self):
         for prestamo in self:
             if prestamo.state not in ("prestado", "atrasado"):
