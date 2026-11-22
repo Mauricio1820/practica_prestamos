@@ -55,3 +55,13 @@ Puedo elegir una laptop disponible y dejar el préstamo en borrador. Si la pasan
 **¿Cuándo se ejecutan las restricciones y cuándo se valida el préstamo?**
 
 Odoo ejecuta @api.constrains al crear o modificar un registro con los campos que se revisan. Por eso una fecha incorrecta falla al guardar. El límite de equipos y la disponibilidad se revisan cuando pulso Prestar.
+
+### Historial, tarjetas y búsqueda
+
+**¿Qué pasa al mover una tarjeta a otra columna?**
+
+Si muevo una tarjeta de Disponible a En mantenimiento, el equipo queda en mantenimiento. Cada columna representa el campo estado y Odoo cambia ese valor al mover la tarjeta.
+
+**¿Se crea una columna en contactos al agregar prestamo_ids?**
+
+La relación ya está guardada en partner_id de cada préstamo. Al abrir el contacto, prestamo_ids muestra los préstamos que apuntan a él. Por eso no necesita otra columna en la tabla de contactos.

@@ -27,6 +27,7 @@ class PrestamoEquipo(models.Model):
         string="Estado",
         required=True,
         default="disponible",
+        group_expand=True,
     )
     notas = fields.Text(string="Notas")
     active = fields.Boolean(string="Activo", default=True)
